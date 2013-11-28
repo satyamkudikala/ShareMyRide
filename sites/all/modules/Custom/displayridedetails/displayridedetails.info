@@ -1,0 +1,9 @@
+;$Id$
+name = displayridedetails
+description = A first module.
+package = Drupal 7 Development
+core = 7.x
+files[] = displayridedetails.module
+
+;dependencies[] = autoload
+;php = 5.2

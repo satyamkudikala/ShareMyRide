@@ -1,0 +1,51 @@
+<?php
+
+// $Id$
+function displayridedetails_menu() {
+
+// this code is to display all the Ride Content from table 
+
+    $items['searchmyride'] = array(
+        'title' => 'Search My Ride',
+        'description' => 'Search Ride details to select',
+        'page callback' => '_search_my_ride',
+        'page arguments' => NULL,
+        'access callback' => TRUE,
+        'expanded' => TRUE,
+    );
+    return $items;
+}
+
+    function _search_my_ride() {
+    $output = '';
+    $sql_Query = 'SELECT distinct title,field_car_model_value,
+        field_start_date_rrule,field_start_time_up_value,
+        field_start_time_down_value FROM NODE N 
+        LEFT JOIN field_data_field_car_model model on model.entity_id = n.nid 
+        LEFT JOIN field_data_field_start_date sdate on sdate.entity_id = n.nid
+        LEFT JOIN field_data_field_start_time_down tdown on tdown.entity_id = n.nid
+        LEFT JOIN field_data_field_start_time_up tup on tup.entity_id = n.nid
+        LEFT JOIN field_data_field_start_location sloc on sloc.entity_id = n.nid 
+        LEFT JOIN field_data_field_destination_location destloc on 
+        destloc.entity_id = n.nid';
+    $output = '';
+
+    $result = db_query($sql_Query);
+
+    if ($result) {
+        $rows = array();
+        while ($row = $result->fetchAssoc()) {
+
+            $rows[] = array_map('check_plain', $row);
+        }
+
+        $header = array(t('Car model'), t('Start Date Rule'),
+            t('Up time'), t('Down Start time'));
+        $output .= theme('table', array('header' => $header, 'rows' => $rows));
+    } else {
+        drupal_set_message(t('No entries meet the filter criteria (Name = "John" and Age > 18).'));
+    }
+
+
+    return $output;
+}
