@@ -16,8 +16,23 @@ function displayridedetails_menu() {
     return $items;
 }
 
-    function _search_my_ride() {
-    $output = '';
+function displayridedetails_form_alter(&$form, &$form_state, $form_id) {
+
+//    drupal_set_message("<pre>" . print_r($form, 1));
+}
+
+function _search_my_ride() {
+
+    // calling Drupal predefined function to create form
+    $form_tem = drupal_get_form('search_my_ride_form');
+    
+        if (isset($_POST)) {
+        $formState = $_SESSION['searchMyride'];
+       // drupal_set_message('<pre>' . print_r($formState, 1));
+        }
+    $output = drupal_render($form_tem);
+
+
     $sql_Query = 'SELECT distinct title,field_car_model_value,
         field_start_date_rrule,field_start_time_up_value,
         field_start_time_down_value FROM NODE N 
@@ -28,7 +43,7 @@ function displayridedetails_menu() {
         LEFT JOIN field_data_field_start_location sloc on sloc.entity_id = n.nid 
         LEFT JOIN field_data_field_destination_location destloc on 
         destloc.entity_id = n.nid';
-    $output = '';
+
 
     $result = db_query($sql_Query);
 
@@ -39,13 +54,88 @@ function displayridedetails_menu() {
             $rows[] = array_map('check_plain', $row);
         }
 
-        $header = array(t('Car model'), t('Start Date Rule'),
+        $header = array(t('Title'), t('Car model'), t('Start Date Rule'),
             t('Up time'), t('Down Start time'));
+
         $output .= theme('table', array('header' => $header, 'rows' => $rows));
     } else {
-        drupal_set_message(t('No entries meet the filter criteria (Name = "John" and Age > 18).'));
+        drupal_set_message(t('No rides Found'));
     }
 
-
     return $output;
+}
+
+function search_my_ride_form($form, &$formState) {
+    drupal_set_message('Form loaded');
+    $form = array();
+    
+        if (isset($_POST)) {
+        $formStateTemp = $_SESSION['searchMyride'];
+        $formState['values'] = $formStateTemp['values'];
+        //drupal_set_message('<pre>' . print_r($formState, 1));
+        }
+    
+
+    $form['from'] = array(
+        '#type' => 'textfield',
+        '#title' => t(' From '),
+        '#required' => TRUE,
+        '#default_value' => $formState['values']['from'] ? $formState['values']['from'] : '', // added default value.
+        '#description' => "Please enter your from.", // added description
+        '#size' => 20, // added
+        '#maxlength' => 20, // added
+    );
+    $form['destination'] = array(
+        '#type' => 'textfield',
+        '#title' => t('destination'),
+        '#required' => TRUE,
+        '#default_value' => $formState['values']['destination'] ? $formState['values']['destination'] : '', // added default value.
+        '#description' => "Please enter your destination", // added description
+        '#size' => 20, // added
+        '#maxlength' => 20, // added
+    );
+    $form['start_date'] = array(
+        '#type' => 'date_popup',
+        '#title' => t('Start Date'),
+        '#required' => TRUE,
+        '#default_value' => $formState['values']['start_date'] ? $formState['values']['start_date'] : "mm/dd/yyyy", // added default value.
+        '#date_format' => 'j F Y',
+        '#description' => "Please enter your start Date.", // added description
+        '#size' => 20, // added
+        '#maxlength' => 20, // added
+        '#label' => ''
+    );
+    $form['repeate_flag'] = array(
+        '#type' => 'checkbox',
+        '#title' => 'Repeate',
+        '#default_value' => $formState['values']['repeate_flag'] ? $formState['values']['repeate_flag'] : 0,
+        '#attributes' => array('onClick' => 'jQuery("#repeat-settings-fieldset").toggle(this.checked);')
+    );
+    $form['date'] = array(
+        '#tree' => TRUE,
+        '#attributes' => array('onClick' => 'display:none;')
+    );
+    $form['date']['rrule'] = array(
+        '#type' => 'date_repeat_rrule',
+        '#default_value' => $formState['values']['date']['rrule'] ? $formState['values']['date']['rrule'] : '',
+        //'#date_timezone' => date_default_timezone_name(),
+        '#date_timezone' => date_default_timezone(),
+        '#date_format' => variable_get('date_format_short', 'm/d/Y - H:i'),
+        '#weight' => -9,
+        '#date_year_range' => '-0:+3',
+        '#date_repeat_widget' => 'date_popup_repeat',
+        '#date_repeat_collapsed' => TRUE,
+        '#date_label_position' => 0
+    );
+
+    $form['btn_search'] = array(
+        '#type' => 'submit',
+        '#value' => 'Search'
+    );
+    return $form;
+}
+
+function search_my_ride_form_submit($form, &$form_state) {
+ //   drupal_set_message('<pre>' . print_r($form_state, 1));
+    $_SESSION['searchMyride'] = $form_state;
 }

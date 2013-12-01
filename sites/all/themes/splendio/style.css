@@ -408,3 +408,4 @@ h3.comment-title a{ margin-bottom: 5px; font-family: 'Ubuntu Condensed', sans-se
 .form-submit:hover{ background: #E57C00; }
 input.form-checkbox, input.form-radio { vertical-align: baseline; }
 .form-text{ border-radius: 3px; border: 1px solid #acacac; color: #949494; padding: 4px 5px; }
+#repeat-settings-fieldset{display:none;}
