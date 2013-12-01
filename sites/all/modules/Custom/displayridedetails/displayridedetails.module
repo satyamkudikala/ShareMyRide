@@ -25,11 +25,14 @@ function _search_my_ride() {
 
     // calling Drupal predefined function to create form
     $form_tem = drupal_get_form('search_my_ride_form');
-    
-        if (isset($_POST)) {
+
+    if (isset($_POST)) {
+
         $formState = $_SESSION['searchMyride'];
-       // drupal_set_message('<pre>' . print_r($formState, 1));
-        }
+       // drupal_set_message('<prv>' . print_r($formState['values']));
+    } else {
+        $formState['values'] = array();
+    }
     $output = drupal_render($form_tem);
 
 
@@ -44,6 +47,51 @@ function _search_my_ride() {
         LEFT JOIN field_data_field_destination_location destloc on 
         destloc.entity_id = n.nid';
 
+    $sql_where = ' WHERE ';
+    if (isset($_POST)) {
+        $values = $formState['values'];
+
+        // from ssearch           
+        $sql_where = $sql_where . ' ( sloc.field_start_location_administrative_area like \'%' . $values['from'] . '%\' OR ';
+        $sql_where = $sql_where . 'sloc.field_start_location_administrative_area = \'' . $values['from'] . '\' OR ';
+        $sql_where = $sql_where . 'sloc.field_start_location_locality like \'%' . $values['from'] . '%\' OR ';
+        $sql_where = $sql_where . 'sloc.field_start_location_locality = \'' . $values['from'] . '\' OR ';
+        $sql_where = $sql_where . 'sloc.field_start_location_postal_code like \'%' . $values['from'] . '%\' OR ';
+        $sql_where = $sql_where . 'sloc.field_start_location_postal_code = \'' . $values['from'] . '\' OR ';
+        $sql_where = $sql_where . 'sloc.field_start_location_thoroughfare like \'%' . $values['from'] . '%\' OR ';
+        $sql_where = $sql_where . 'sloc.field_start_location_thoroughfare = \'' . $values['from'] . '\' OR ';
+        $sql_where = $sql_where . 'sloc.field_start_location_premise like \'%' . $values['from'] . '%\' OR ';
+        $sql_where = $sql_where . 'sloc.field_start_location_premise = \'' . $values['from'] . '\') AND ';
+
+        // Destination
+        $sql_where = $sql_where . ' ( destloc.field_destination_location_administrative_area like \'%' . $values['from'] . '%\' OR ';
+        $sql_where = $sql_where . 'destloc.field_destination_location_locality like \'%' . $values['from'] . '%\' OR ';
+        $sql_where = $sql_where . 'destloc.field_destination_location_postal_code like \'%' . $values['from'] . '%\' OR ';
+        $sql_where = $sql_where . 'destloc.field_destination_location_thoroughfare like \'%' . $values['from'] . '%\' OR ';
+        $sql_where = $sql_where . 'destloc.field_destination_location_premise like \'%' . $values['from'] . '%\' OR ';
+        $sql_where = $sql_where . ' destloc.field_destination_location_administrative_area = \'' . $values['from'] . '\' OR ';
+        $sql_where = $sql_where . 'destloc.field_destination_location_locality = \'' . $values['from'] . '\' OR ';
+        $sql_where = $sql_where . 'destloc.field_destination_location_postal_code = \'' . $values['from'] . '\' OR ';
+        $sql_where = $sql_where . 'destloc.field_destination_location_thoroughfare = \'' . $values['from'] . '\' OR ';
+        $sql_where = $sql_where . 'destloc.field_destination_location_premise = \'' . $values['from'] . '\') AND ';
+
+
+        // start Date 
+        $time = strtotime($values['start_date']);
+        $newformat = date('Y-m-d', $time);
+        $sql_where = $sql_where . ' sdate.field_start_date_value > ' . $newformat . ' ';
+
+        if ($values['repeate_flag'] != 0) {
+
+            $dateObj = $values['date'];
+            $rruleStr = $dateObj['rrule'];
+
+            $sql_where = $sql_where . ' AND sdate.field_start_date_rrule = \'' . $rruleStr . '\'';
+        }
+        $sql_Query = $sql_Query . $sql_where;
+
+        //drupal_set_message('Query '.$sql_Query);
+    }
 
     $result = db_query($sql_Query);
 
@@ -66,15 +114,15 @@ function _search_my_ride() {
 }
 
 function search_my_ride_form($form, &$formState) {
-    drupal_set_message('Form loaded');
+  //  drupal_set_message('Form loaded');
     $form = array();
-    
-        if (isset($_POST)) {
+
+    if (isset($_POST)) {
         $formStateTemp = $_SESSION['searchMyride'];
         $formState['values'] = $formStateTemp['values'];
         //drupal_set_message('<pre>' . print_r($formState, 1));
-        }
-    
+    }
+
 
     $form['from'] = array(
         '#type' => 'textfield',
@@ -136,6 +184,6 @@ function search_my_ride_form($form, &$formState) {
 }
 
 function search_my_ride_form_submit($form, &$form_state) {
- //   drupal_set_message('<pre>' . print_r($form_state, 1));
+    //   drupal_set_message('<pre>' . print_r($form_state, 1));
     $_SESSION['searchMyride'] = $form_state;
 }
