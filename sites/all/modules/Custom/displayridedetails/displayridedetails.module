@@ -38,7 +38,7 @@ function _search_my_ride() {
 
     $sql_Query = 'SELECT distinct title,field_car_model_value,
         field_start_date_rrule,field_start_time_up_value,
-        field_start_time_down_value FROM NODE N 
+        field_start_time_down_value FROM node N 
         LEFT JOIN field_data_field_car_model model on model.entity_id = n.nid 
         LEFT JOIN field_data_field_start_date sdate on sdate.entity_id = n.nid
         LEFT JOIN field_data_field_start_time_down tdown on tdown.entity_id = n.nid
